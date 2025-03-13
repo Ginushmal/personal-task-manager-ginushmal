@@ -57,11 +57,12 @@ export async function POST(req: Request) {
     // If the event type is user.created then create a new user in the database
     const newUser = await prisma.user.create({
       data: {
-        id: evt.data.id,
+        external_user_id: evt.data.id,
         first_name: evt.data.first_name,
         last_name: evt.data.last_name,
         email: evt.data.email_addresses[0].email_address,
         username: evt.data.username,
+        image_url: evt.data.image_url,
       },
     });
     console.log("NewUser Added to DB:", newUser);
