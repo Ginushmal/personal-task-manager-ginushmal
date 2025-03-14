@@ -1,3 +1,15 @@
+export enum Priority {
+  LOW = "low",
+  MEDIUM = "medium",
+  HIGH = "high",
+}
+
+export enum Status {
+  TODO = "todo",
+  IN_PROGRESS = "in-progress",
+  DONE = "done",
+}
+
 export type Task = {
   id: string;
   user_id: string;
@@ -5,8 +17,8 @@ export type Task = {
   description?: string;
   category?: string;
   due_date?: Date;
-  priority?: "low" | "medium" | "high";
-  status?: "todo" | "in-progress" | "done";
+  priority?: Priority;
+  status?: Status;
   created_at: Date;
   updated_at: Date;
 };
