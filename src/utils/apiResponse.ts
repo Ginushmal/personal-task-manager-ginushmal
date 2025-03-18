@@ -1,10 +1,42 @@
-export function successResponse({
+// Define TypeScript types
+export type SuccessResponse<T> = {
+  status: 200;
+  message: string;
+  data: T;
+  timestamp: string;
+};
+
+export type SuccessPageResponse<T> = {
+  status: 200;
+  message: string;
+  data: T;
+  meta: {
+    total: number;
+    page: number;
+    perPage: number;
+    totalPages: number;
+  };
+  timestamp: string;
+};
+
+export type ErrorResponse = {
+  status: number;
+  error: string;
+  message: string;
+  code?: string;
+  details?: any;
+  path?: string;
+  timestamp: string;
+};
+
+// Functions using the types
+export function successResponse<T>({
   data,
   message = "Request successful",
 }: {
-  data: any;
+  data: T;
   message?: string;
-}) {
+}): SuccessResponse<T> {
   return {
     status: 200,
     message,
@@ -13,7 +45,7 @@ export function successResponse({
   };
 }
 
-export function successPageResponse({
+export function successPageResponse<T>({
   data,
   message = "Request successful",
   total,
@@ -21,13 +53,13 @@ export function successPageResponse({
   perPage,
   totalPages,
 }: {
-  data: any;
+  data: T;
   message?: string;
   total: number;
   page: number;
   perPage: number;
   totalPages: number;
-}) {
+}): SuccessPageResponse<T> {
   return {
     status: 200,
     message,
@@ -56,7 +88,7 @@ export function errorResponse({
   code?: string;
   details?: any;
   path?: string;
-}) {
+}): ErrorResponse {
   return {
     status,
     error,

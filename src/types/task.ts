@@ -22,3 +22,12 @@ export type Task = {
   created_at: Date;
   updated_at: Date;
 };
+
+export type TaskData = {
+  title: string;
+  description?: string;
+  category?: string;
+  due_date?: string;
+  priority?: string;
+  status?: string;
+};
