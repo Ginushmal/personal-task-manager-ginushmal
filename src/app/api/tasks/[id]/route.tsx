@@ -4,7 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import schema from "../schema"; // Import task validation schema
 import { ObjectId } from "mongodb";
 import { successResponse, errorResponse } from "@/utils/apiResponse";
-
+import { Task } from "@/types/task";
 
 // Function to check if ID is a valid MongoDB ObjectId
 const isValidObjectId = (id: string) => ObjectId.isValid(id);
@@ -41,9 +41,11 @@ export async function GET(
       );
     }
 
+    const tasktyped = task as Task;
+
     return NextResponse.json(
       successResponse({
-        data: task,
+        data: tasktyped,
         message: "Task found",
       }),
       { status: 200 }
@@ -138,9 +140,11 @@ export async function PUT(
       },
     });
 
+    const updatedTasktyped = updatedTask as Task;
+
     return NextResponse.json(
       successResponse({
-        data: updatedTask,
+        data: updatedTasktyped,
         message: "Task updated successfully",
       }),
       { status: 200 }
@@ -157,7 +161,6 @@ export async function PUT(
       { status: 500 }
     );
   }
-
 }
 
 // DELETE task by ID
@@ -207,9 +210,11 @@ export async function DELETE(
 
     await prisma.task.delete({ where: { id: params.id } });
 
+    const delTaskTyped = task as Task;
+
     return NextResponse.json(
       successResponse({
-        data: task,
+        data: delTaskTyped,
         message: "Task deleted successfully",
       }),
       { status: 200 }

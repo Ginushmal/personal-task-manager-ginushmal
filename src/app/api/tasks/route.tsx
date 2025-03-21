@@ -8,6 +8,7 @@ import {
   successPageResponse,
 } from "@/utils/apiResponse";
 import { getMongoUserId } from "@/actions/userID";
+import { Task } from "@/types/task";
 
 // export async function GET(request: NextRequest) {
 //   try {
@@ -95,7 +96,14 @@ export async function GET(request: NextRequest) {
     }
 
     // Validate sortBy field to prevent SQL injection
-    const allowedSortFields = ["created_at", "title", "priority?"];
+    const allowedSortFields = [
+      "created_at",
+      "title",
+      "priority",
+      "status",
+      "category",
+      "due_date",
+    ];
     if (!allowedSortFields.includes(sortBy)) {
       return NextResponse.json(
         errorResponse({
@@ -137,9 +145,11 @@ export async function GET(request: NextRequest) {
       orderBy: { [sortBy]: sortOrder },
     });
 
+    const tasksTyped: Task[] = tasks as Task[];
+
     return NextResponse.json(
-      successPageResponse({
-        data: tasks,
+      successPageResponse<Task>({
+        data: tasksTyped,
         message: "Tasks retrieved successfully",
         total,
         page,

@@ -10,6 +10,14 @@ export enum Status {
   DONE = "done",
 }
 
+export type TaskSortField =
+  | "created_at"
+  | "title"
+  | "priority"
+  | "status"
+  | "category"
+  | "due_date";
+
 export type Task = {
   id: string;
   user_id: string;
@@ -23,6 +31,7 @@ export type Task = {
   updated_at: Date;
 };
 
+// to pass objects with user entered data
 export type TaskData = {
   title: string;
   description?: string;
