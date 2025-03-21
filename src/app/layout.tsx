@@ -9,6 +9,7 @@ import {
 } from "@clerk/nextjs";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import ClientStateCreator from "@/components/ClientStateCreator";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -24,6 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
+      <ClientStateCreator />
       <html lang="en">
         <body className={inter.className}>
           {" "}

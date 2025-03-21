@@ -1,30 +1,17 @@
-"use client";
-import { Task } from "@/types/task";
-import { useState, useEffect } from "react";
-import TaskItem from "@/components/TaskItem";
+// import { useUserStore } from "@/store/userStore";
+import TaskTable from "@/app/TaskTable";
 
-export default function TaskList() {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch("/api/tasks")
-      .then((res) => res.json())
-      .then((data) => {
-        setTasks(data);
-        setLoading(false);
-      })
-      .catch((err) => console.error("Error fetching tasks:", err));
-  }, []);
-
-  if (loading) return <p>Loading...</p>;
+export default function HomePage() {
+  // const user = useUserStore((state) => state.user);
 
   return (
-    <div>
-      <h1 className="text-xl">Tasks</h1>
-      {tasks.map((task) => (
-        <TaskItem key={task.id} task={task} />
-      ))}
+    <div className="p-10 px-36 max-w-full max-h-fit mx-auto">
+      {/* <h2 className="text-2xl mb-4 font-bold">
+        Hello {user?.first_name} {user?.last_name}
+      </h2> */}
+      <h3 className="text-base font-normal  mb-4">Here are your tasks :</h3>
+
+      <TaskTable />
     </div>
   );
 }
