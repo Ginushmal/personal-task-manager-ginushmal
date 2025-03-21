@@ -3,10 +3,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { format } from "date-fns";
 import { useSWRConfig } from "swr";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -37,13 +38,18 @@ import BackButton from "@/components/BackButton";
 import { cn } from "@/lib/utils";
 import { Priority, Status, TaskData } from "@/types/task";
 import taskSchema from "@/app/api/tasks/schema";
-import { createTask } from "@/utils/taskMutateFunctions";
+import useTask from "@/hooks/useTask";
+import { deleteTask, updateTask } from "@/utils/taskMutateFunctions";
+import { DeleteTaskDialog } from "@/components/DeleteTaskDialog";
 
 const formSchema = taskSchema;
 
-export default function AddNewTask() {
+export default function EditTask() {
   const { mutate, cache } = useSWRConfig();
   const router = useRouter();
+  const { id } = useParams();
+  const { task, isLoading } = useTask({ taskId: id as string });
+  const [formInitialized, setFormInitialized] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -57,8 +63,24 @@ export default function AddNewTask() {
     },
   });
 
+  // Prefill the form when task data is available
+  useEffect(() => {
+    if (task && !formInitialized) {
+      form.reset({
+        title: task.title || "",
+        description: task.description || "",
+        category: task.category || "",
+        due_date: task.due_date ? new Date(task.due_date) : new Date(),
+        priority: (task.priority as Priority) || undefined,
+        status: (task.status as Status) || undefined,
+      });
+      setFormInitialized(true);
+    }
+  }, [task, form, formInitialized]);
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    // console.log(values);
+    if (!id) return;
+
     const taskData: TaskData = {
       title: values.title,
       description: values.description,
@@ -68,20 +90,43 @@ export default function AddNewTask() {
       status: values.status,
     };
 
-    const createdTask = await createTask(taskData, mutate, cache);
+    const updatedTask = await updateTask(id as string, taskData, mutate, cache);
 
-    // if the createdTask is not null or undefined, redirect to the home page with next js best practices
-    if (createdTask) {
-      // redirect to home page
+    if (updatedTask) {
       router.push("/");
     }
+  }
+
+  function resetForm() {
+    if (task) {
+      form.reset({
+        title: task.title || "",
+        description: task.description || "",
+        category: task.category || "",
+        due_date: task.due_date ? new Date(task.due_date) : new Date(),
+        priority: (task.priority as Priority) || undefined,
+        status: (task.status as Status) || undefined,
+      });
+    }
+  }
+
+  async function handleDelete() {
+    const taskDeleted = await deleteTask(id as string, mutate, cache);
+
+    if (taskDeleted) {
+      router.push("/");
+    }
+  }
+
+  if (isLoading) {
+    return <div className="py-2 px-6 lg:px-24 xl:px-48">Loading...</div>;
   }
 
   return (
     <div className="py-10 px-6 lg:px-24 xl:px-48">
       <div className="flex items-center mb-6">
         <BackButton />
-        <h1 className="text-2xl font-bold ml-4">Add New Task</h1>
+        <h1 className="text-2xl font-bold ml-4">Edit Task</h1>
       </div>
       <div className="py-2 px-12 lg:px-24 xl:px-48">
         <Form {...form}>
@@ -175,7 +220,8 @@ export default function AddNewTask() {
                   <FormLabel>Priority</FormLabel>
                   <Select
                     onValueChange={field.onChange}
-                    defaultValue={field.value}
+                    value={field.value}
+                    defaultValue={task?.priority}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select priority" />
@@ -201,7 +247,8 @@ export default function AddNewTask() {
                   <FormLabel>Status</FormLabel>
                   <Select
                     onValueChange={field.onChange}
-                    defaultValue={field.value}
+                    value={field.value}
+                    defaultValue={task?.status}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select status" />
@@ -219,7 +266,15 @@ export default function AddNewTask() {
               )}
             />
 
-            <Button type="submit">Add Task</Button>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Button type="submit">Update Task</Button>
+                <Button type="button" variant="outline" onClick={resetForm}>
+                  Reset
+                </Button>
+              </div>
+              <DeleteTaskDialog id={id.toString()} onDelete={handleDelete} />
+            </div>
           </form>
         </Form>
       </div>

@@ -1,12 +1,15 @@
-import { useSWRConfig } from "swr";
+import { ScopedMutator, Cache, useSWRConfig } from "swr";
 import { Task, TaskData } from "@/types/task"; // Adjust the import path as needed
-import { SuccessResponse } from "@/types/apiRespons";
+import { SuccessPageResponse, SuccessResponse } from "@/types/apiRespons";
 
 const API_URL = "/api/tasks";
-const { mutate, cache } = useSWRConfig();
 
 // Create a new task
-export const createTask = async (taskData: TaskData) => {
+export const createTask = async (
+  taskData: TaskData,
+  mutate: ScopedMutator,
+  cache: Cache<any>
+) => {
   try {
     const response = await fetch(API_URL, {
       method: "POST",
@@ -16,25 +19,29 @@ export const createTask = async (taskData: TaskData) => {
 
     if (!response.ok) throw new Error("Failed to create task");
 
-    const result = await response.json();
+    const resultTyped = (await response.json()) as SuccessResponse<Task>;
+    const taskDataCreated = resultTyped.data;
 
-    if (!!response.ok) {
-      const resultTyped = result as SuccessResponse<Task>;
+    // Update paginated task lists
+    Array.from(cache.keys()).forEach((key) => {
+      if (key.startsWith(`${API_URL}?page=`)) {
+        const cachedData = cache.get(key);
+        const cachedDataResponse =
+          cachedData?.data as SuccessPageResponse<Task>;
 
-      const taskDataCreated = resultTyped.data;
+        if (!cachedDataResponse) return;
 
-      Array.from(cache.keys()).forEach((key) => {
-        if (key.startsWith(API_URL)) {
-          mutate(
-            API_URL,
-            (tasks: Task[] = []) => [...tasks, taskDataCreated],
-            false
-          );
-        }
-      });
+        const updatedCachedDataResponse = {
+          ...cachedDataResponse,
+          data: [taskDataCreated, ...cachedDataResponse.data], // Add new task at the top
+        };
 
-      return taskDataCreated;
-    }
+        mutate(key, updatedCachedDataResponse, false);
+      }
+    });
+
+    // Return created task
+    return taskDataCreated;
   } catch (err) {
     console.error(err);
     throw err;
@@ -42,13 +49,20 @@ export const createTask = async (taskData: TaskData) => {
 };
 
 // Update a task by ID
-export const updateTask = async (id: string, taskData: Partial<TaskData>) => {
+export const updateTask = async (
+  id: string,
+  taskData: Partial<TaskData>,
+  mutate: ScopedMutator,
+  cache: Cache<any>
+) => {
   try {
     const response = await fetch(`${API_URL}/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(taskData),
     });
+
+    // console.log("Response", response);
 
     if (!response.ok) throw new Error("Failed to update task");
 
@@ -61,13 +75,35 @@ export const updateTask = async (id: string, taskData: Partial<TaskData>) => {
       const updatedTask = resultTyped.data;
 
       Array.from(cache.keys()).forEach((key) => {
-        if (key.startsWith(API_URL)) {
-          mutate(key, (tasks: Task[] = []) =>
-            tasks.map((task) => (task.id === id ? updatedTask : task))
+        if (key.startsWith(`${API_URL}?page=`)) {
+          const cachedData = cache.get(key);
+          const cachedDataResponse =
+            cachedData?.data as SuccessPageResponse<Task>;
+
+          console.log(`Key: ${key}`);
+          console.log(`Cached Data:`, cachedData);
+          console.log(`Cached Data Response:`, cachedDataResponse);
+
+          if (!cachedDataResponse) return;
+
+          const cachedDataTaskList = cachedDataResponse.data;
+
+          const updatedcCachedDataTaskList = cachedDataTaskList.map((task) =>
+            task.id === id ? updatedTask : task
           );
+
+          const updatedCachedDataResponse = {
+            ...cachedDataResponse,
+            data: updatedcCachedDataTaskList,
+          };
+
+          console.log(`Updated Response Data:`, updatedCachedDataResponse);
+
+          mutate(key, updatedCachedDataResponse, false);
         }
       });
-      mutate(`${API_URL}/${id}`, updatedTask, true);
+
+      mutate(`${API_URL}/${id}`, updatedTask, false);
 
       return updatedTask;
     }
@@ -78,25 +114,38 @@ export const updateTask = async (id: string, taskData: Partial<TaskData>) => {
 };
 
 // Delete a task by ID
-export const deleteTask = async (id: string) => {
+export const deleteTask = async (
+  id: string,
+  mutate: ScopedMutator,
+  cache: Cache<any>
+) => {
   try {
     const response = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
 
     if (!response.ok) throw new Error("Failed to delete task");
 
-    if (!!response.ok) {
-      Array.from(cache.keys()).forEach((key) => {
-        if (key.startsWith(API_URL)) {
-          mutate(key, (tasks: Task[] = []) =>
-            tasks.filter((task) => task.id !== id)
-          );
-        }
-      });
+    // Update paginated task lists
+    Array.from(cache.keys()).forEach((key) => {
+      if (key.startsWith(`${API_URL}?page=`)) {
+        const cachedData = cache.get(key);
+        const cachedDataResponse =
+          cachedData?.data as SuccessPageResponse<Task>;
 
-      mutate(`${API_URL}/${id}`, null, true);
+        if (!cachedDataResponse) return;
 
-      return true;
-    }
+        const updatedCachedDataResponse = {
+          ...cachedDataResponse,
+          data: cachedDataResponse.data.filter((task) => task.id !== id), // Remove deleted task
+        };
+
+        mutate(key, updatedCachedDataResponse, false);
+      }
+    });
+
+    // Remove the individual task cache
+    mutate(`${API_URL}/${id}`, null, false);
+
+    return true;
   } catch (err) {
     console.error(err);
     throw err;

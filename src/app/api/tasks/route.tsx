@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import schema from "./schema";
+import taskSchema from "./schema";
 import { prisma } from "@/app/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import {
@@ -188,7 +188,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const validation = schema.safeParse(body);
+    const validation = taskSchema.safeParse(body);
 
     if (!validation.success) {
       return NextResponse.json(
