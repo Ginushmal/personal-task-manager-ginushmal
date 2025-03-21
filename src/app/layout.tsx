@@ -11,6 +11,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import ClientStateCreator from "@/components/ClientStateCreator";
 import Link from "next/link";
+import Image from "next/image";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -32,9 +33,11 @@ export default function RootLayout({
           <header className="flex justify-between items-center p-4 h-16 border-b shadow-md">
             <div className="flex items-center">
               <Link href="/">
-                <img
+                <Image
                   src="/TaskFlowLogo.png"
                   alt="Task Flow Logo"
+                  width={200}
+                  height={100}
                   className="h-20 p-3 w-auto"
                 />
               </Link>
