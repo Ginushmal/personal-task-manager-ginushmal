@@ -219,7 +219,9 @@ export default function AddNewTask() {
               )}
             />
 
-            <Button type="submit">Add Task</Button>
+            <Button type="submit" className="flex flex-col w-full md:w-auto">
+              Add Task
+            </Button>
           </form>
         </Form>
       </div>

@@ -8,6 +8,7 @@ type TaskParams = {
   perPage?: number;
   sortBy?: TaskSortField;
   sortOrder?: "asc" | "desc";
+  search?: string;
 };
 
 function useTasks({
@@ -15,6 +16,7 @@ function useTasks({
   perPage = 10,
   sortBy = "created_at",
   sortOrder = "desc",
+  search = "",
 }: TaskParams): {
   tasks: Task[] | null;
   meta: SuccessPageResponse<any>["meta"] | null;
@@ -26,11 +28,14 @@ function useTasks({
     perPage: String(perPage),
     sortBy,
     sortOrder,
+    search,
   }).toString();
+
+  console.log("Search in useTasks", search);
 
   const apiUrl = `/api/tasks?${query}`.replace(/([^:]\/)\/+/g, "$1"); // Removes duplicate slashes
 
-  // console.log("Full URL", apiUrl);
+  console.log("Full URL", apiUrl);
 
   const { data, error, isLoading } = useSWR<
     SuccessPageResponse<Task> | ErrorResponse

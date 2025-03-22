@@ -80,9 +80,9 @@ export const updateTask = async (
           const cachedDataResponse =
             cachedData?.data as SuccessPageResponse<Task>;
 
-          console.log(`Key: ${key}`);
-          console.log(`Cached Data:`, cachedData);
-          console.log(`Cached Data Response:`, cachedDataResponse);
+          // console.log(`Key: ${key}`);
+          // console.log(`Cached Data:`, cachedData);
+          // console.log(`Cached Data Response:`, cachedDataResponse);
 
           if (!cachedDataResponse) return;
 
@@ -97,7 +97,7 @@ export const updateTask = async (
             data: updatedcCachedDataTaskList,
           };
 
-          console.log(`Updated Response Data:`, updatedCachedDataResponse);
+          // console.log(`Updated Response Data:`, updatedCachedDataResponse);
 
           mutate(key, updatedCachedDataResponse, false);
         }

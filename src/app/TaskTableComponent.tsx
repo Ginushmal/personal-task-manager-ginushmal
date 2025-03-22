@@ -34,6 +34,7 @@ export default function TaskTableComponent({
   perPage,
   sortColumn,
   sortOrder,
+  search,
   onSort,
   setMeta,
 }: {
@@ -41,6 +42,7 @@ export default function TaskTableComponent({
   perPage: number;
   sortColumn: TaskSortField;
   sortOrder: "asc" | "desc";
+  search: string;
   onSort: (column: TaskSortField) => void;
   setMeta: (meta: SuccessPageResponse<any>["meta"]) => void;
 }) {
@@ -50,11 +52,14 @@ export default function TaskTableComponent({
     perPage: perPage,
     sortBy: sortColumn,
     sortOrder: sortOrder,
+    search: search,
   });
 
   const [isMobile, setIsMobile] = useState(false);
   const [status, setStatus] = useState<{ [id: string]: Status }>({});
   const { mutate, cache } = useSWRConfig();
+
+  // console.log("Search in table component", search);
 
   const onStatusButtonClick = async (id: string) => {
     setStatus((prev) => ({
@@ -85,7 +90,7 @@ export default function TaskTableComponent({
         title: task.title,
       };
 
-      console.log("Cache keys ", cache.keys());
+      // console.log("Cache keys ", cache.keys());
 
       // Update the task status in the API
       const updatedTask = await updateTask(
@@ -288,25 +293,27 @@ export default function TaskTableComponent({
                 )}
 
                 <TableCell>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onStatusButtonClick(task.id)}
-                  >
-                    {status[task.id] === Status.TODO && <CircleDashed />}
-                    {status[task.id] === Status.IN_PROGRESS && (
-                      <CircleDotDashed />
-                    )}
-                    {status[task.id] === Status.DONE && <CircleCheck />}
-                  </Button>
+                  <div className="flex gap-2 lg:justify-start justify-end">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onStatusButtonClick(task.id)}
+                    >
+                      {status[task.id] === Status.TODO && <CircleDashed />}
+                      {status[task.id] === Status.IN_PROGRESS && (
+                        <CircleDotDashed />
+                      )}
+                      {status[task.id] === Status.DONE && <CircleCheck />}
+                    </Button>
 
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => router.push(`/tasks/edit/${task.id}`)}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => router.push(`/tasks/edit/${task.id}`)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
             ))

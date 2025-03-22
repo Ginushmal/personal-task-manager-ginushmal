@@ -266,14 +266,25 @@ export default function EditTask() {
               )}
             />
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <Button type="submit">Update Task</Button>
-                <Button type="button" variant="outline" onClick={resetForm}>
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-6">
+              <div className="flex flex-col sm:flex-row items-center gap-2 w-full">
+                <Button type="submit" className="w-full sm:w-auto">
+                  Update Task
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={resetForm}
+                  className="w-full sm:w-auto"
+                >
                   Reset
                 </Button>
               </div>
-              <DeleteTaskDialog id={id.toString()} onDelete={handleDelete} />
+              <DeleteTaskDialog
+                id={id.toString()}
+                onDelete={handleDelete}
+                className="w-full sm:w-auto"
+              />
             </div>
           </form>
         </Form>

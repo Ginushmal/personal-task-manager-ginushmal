@@ -12,14 +12,18 @@ import {
 export function DeleteTaskDialog({
   id,
   onDelete,
+  className,
 }: {
   id: string;
   onDelete: (id: string) => void;
+  className?: string;
 }) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="destructive">Delete Task</Button>
+        <Button className={className} variant="destructive">
+          Delete Task
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>

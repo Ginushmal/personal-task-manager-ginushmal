@@ -80,8 +80,9 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1", 10);
     const perPage = parseInt(searchParams.get("perPage") || "10", 10);
-    const sortBy = searchParams.get("sortBy") || "created_at"; // Default: createdAt
-    const sortOrder = searchParams.get("sortOrder") === "asc" ? "asc" : "desc"; // Default: desc
+    const sortBy = searchParams.get("sortBy") || "created_at";
+    const sortOrder = searchParams.get("sortOrder") === "asc" ? "asc" : "desc";
+    const searchQuery = searchParams.get("search") || ""; // Get search term
 
     if (page < 1 || perPage < 1) {
       return NextResponse.json(
@@ -95,7 +96,6 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Validate sortBy field to prevent SQL injection
     const allowedSortFields = [
       "created_at",
       "title",
@@ -119,7 +119,6 @@ export async function GET(request: NextRequest) {
     }
 
     const mdb_id = await getMongoUserId();
-
     if (!mdb_id) {
       return NextResponse.json(
         errorResponse({
@@ -132,24 +131,35 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fetch total count
-    const total = await prisma.task.count({ where: { user_id: mdb_id } });
+    // Count total tasks with optional title search
+    const total = await prisma.task.count({
+      where: {
+        user_id: mdb_id,
+        title: searchQuery.trim()
+          ? { contains: searchQuery, mode: "insensitive" }
+          : undefined,
+      },
+    });
+
     const totalPages = Math.ceil(total / perPage);
     const skip = (page - 1) * perPage;
 
-    // Fetch sorted & paginated tasks
+    // Fetch tasks with search, sorting, and pagination
     const tasks = await prisma.task.findMany({
-      where: { user_id: mdb_id },
+      where: {
+        user_id: mdb_id,
+        title: searchQuery.trim()
+          ? { contains: searchQuery, mode: "insensitive" }
+          : undefined,
+      },
       skip,
       take: perPage,
       orderBy: { [sortBy]: sortOrder },
     });
 
-    const tasksTyped: Task[] = tasks as Task[];
-
     return NextResponse.json(
       successPageResponse<Task>({
-        data: tasksTyped,
+        data: tasks,
         message: "Tasks retrieved successfully",
         total,
         page,
