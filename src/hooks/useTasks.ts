@@ -31,11 +31,11 @@ function useTasks({
     search,
   }).toString();
 
-  console.log("Search in useTasks", search);
+  // console.log("Search in useTasks", search);
 
   const apiUrl = `/api/tasks?${query}`.replace(/([^:]\/)\/+/g, "$1"); // Removes duplicate slashes
 
-  console.log("Full URL", apiUrl);
+  // console.log("Full URL", apiUrl);
 
   const { data, error, isLoading } = useSWR<
     SuccessPageResponse<Task> | ErrorResponse
