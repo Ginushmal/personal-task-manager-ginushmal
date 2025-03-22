@@ -8,7 +8,7 @@ import {
   successPageResponse,
 } from "@/utils/apiResponse";
 import { getMongoUserId } from "@/actions/userID";
-import { Task } from "@/types/task";
+import { Priority, Status, Task } from "@/types/task";
 
 // export async function GET(request: NextRequest) {
 //   try {
@@ -157,9 +157,22 @@ export async function GET(request: NextRequest) {
       orderBy: { [sortBy]: sortOrder },
     });
 
+    const tasksTyped: Task[] = tasks.map((task) => ({
+      id: task.id,
+      user_id: task.user_id,
+      title: task.title,
+      description: task.description ?? undefined,
+      category: task.category ?? undefined,
+      due_date: task.due_date ?? undefined,
+      priority: (task.priority as Priority) ?? undefined,
+      status: (task.status as Status) ?? undefined,
+      created_at: task.created_at,
+      updated_at: task.updated_at,
+    }));
+
     return NextResponse.json(
       successPageResponse<Task>({
-        data: tasks,
+        data: tasksTyped,
         message: "Tasks retrieved successfully",
         total,
         page,
