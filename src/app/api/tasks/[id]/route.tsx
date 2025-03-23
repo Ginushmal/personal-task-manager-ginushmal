@@ -5,6 +5,7 @@ import schema from "../schema"; // Import task validation schema
 import { ObjectId } from "mongodb";
 import { successResponse, errorResponse } from "@/utils/apiResponse";
 import { Task } from "@/types/task";
+import { getMongoUserId } from "@/actions/userID";
 
 // Function to check if ID is a valid MongoDB ObjectId
 const isValidObjectId = (id: string) => ObjectId.isValid(id);
@@ -70,6 +71,9 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    // console.log("PUT request body", request.body);
+    // console.log("PUT request params", params);
+
     if (!isValidObjectId(params.id)) {
       return NextResponse.json(
         errorResponse({
@@ -82,18 +86,7 @@ export async function PUT(
       );
     }
 
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json(
-        errorResponse({
-          status: 401,
-          error: "Unauthorized",
-          message: "You must be logged in to update a task",
-          code: "UNAUTHORIZED",
-        }),
-        { status: 401 }
-      );
-    }
+    const mdb_uid = await getMongoUserId();
 
     const body = await request.json();
     const validation = schema.partial().safeParse(body); // Allow partial updates
@@ -115,7 +108,10 @@ export async function PUT(
       where: { id: params.id },
     });
 
-    if (!existingTask || existingTask.user_id !== userId) {
+    // console.log("Existing task", existingTask);
+    // console.log("User ID", mdb_uid);
+
+    if (!existingTask || existingTask.user_id !== mdb_uid) {
       return NextResponse.json(
         errorResponse({
           status: 403,
@@ -181,8 +177,8 @@ export async function DELETE(
       );
     }
 
-    const { userId } = await auth();
-    if (!userId) {
+    const mdb_uid = await getMongoUserId();
+    if (!mdb_uid) {
       return NextResponse.json(
         errorResponse({
           status: 401,
@@ -196,7 +192,7 @@ export async function DELETE(
 
     const task = await prisma.task.findUnique({ where: { id: params.id } });
 
-    if (!task || task.user_id !== userId) {
+    if (!task || task.user_id !== mdb_uid) {
       return NextResponse.json(
         errorResponse({
           status: 403,

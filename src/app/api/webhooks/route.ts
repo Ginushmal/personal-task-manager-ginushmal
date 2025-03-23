@@ -65,7 +65,7 @@ export async function POST(req: Request) {
         image_url: evt.data.image_url,
       },
     });
-    console.log("NewUser Added to DB:", newUser);
+    // console.log("NewUser Added to DB:", newUser);
   } else if (evt.type === "user.updated") {
     // if the event type is user.updated then update the user in the database if that user exists
     const user = await prisma.user.findUnique({
@@ -75,7 +75,7 @@ export async function POST(req: Request) {
     });
 
     if (!user) {
-      console.log("User not found in DB");
+      // console.log("User not found in DB");
       return new Response("Webhook received", { status: 200 });
     }
 
@@ -90,7 +90,7 @@ export async function POST(req: Request) {
         username: evt.data.username,
       },
     });
-    console.log("User Updated in DB:", updatedUser);
+    // console.log("User Updated in DB:", updatedUser);
   } else if (evt.type === "user.deleted") {
     // if the event type is user.deleted then delete the user from the database if that user exists
     const user = await prisma.user.findUnique({
@@ -100,7 +100,7 @@ export async function POST(req: Request) {
     });
 
     if (!user) {
-      console.log("User not found in DB");
+      // console.log("User not found in DB");
       return new Response("Webhook received", { status: 200 });
     }
     const deletedUser = await prisma.user.delete({
@@ -108,7 +108,7 @@ export async function POST(req: Request) {
         id: evt.data.id,
       },
     });
-    console.log("User Deleted from DB:", deletedUser);
+    // console.log("User Deleted from DB:", deletedUser);
   }
 
   return new Response("Webhook received", { status: 200 });

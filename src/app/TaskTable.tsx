@@ -1,11 +1,10 @@
-// TaskTable.tsx
 "use client";
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input"; // Import Input from shadcn/ui
 import TaskTableComponent from "./TaskTableComponent";
 import PaginationController from "./PaginationController";
-import useTasks from "@/hooks/useTasks";
 import { TaskSortField } from "@/types/task";
 import { SuccessPageResponse } from "@/types/apiRespons";
 
@@ -20,6 +19,7 @@ export default function TaskTable() {
     perPage: 10,
     totalPages: 0,
   });
+  const [search, setSearch] = useState("");
 
   const handleSort = (column: TaskSortField) => {
     if (sortColumn === column) {
@@ -29,13 +29,22 @@ export default function TaskTable() {
       setSortOrder("asc");
     }
   };
-
+  // console.log("search", search);
   return (
     <div>
-      {/* Add new task button */}
-      <div className="flex justify-end mb-4">
-        <Link href="/tasks/new">
-          <Button variant="default"> + Add New Task</Button>
+      {/* Search Input Field */}
+      <div className="flex flex-col md:flex-row md:justify-between items-center gap-2 mb-4 w-full">
+        <Input
+          type="text"
+          placeholder="Search tasks..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full md:w-64"
+        />
+        <Link href="/tasks/new" className="w-full md:w-auto">
+          <Button variant="default" className="w-full md:w-auto">
+            + Add New Task
+          </Button>
         </Link>
       </div>
 
@@ -45,17 +54,19 @@ export default function TaskTable() {
         perPage={perPage}
         sortColumn={sortColumn}
         sortOrder={sortOrder}
+        search={search}
         onSort={handleSort}
         setMeta={setMeta}
       />
 
-      {/* To pre fetch the next page beforehand */}
+      {/* Pre-fetch next page */}
       <div style={{ display: "none" }}>
         <TaskTableComponent
           page={page + 1}
           perPage={perPage}
           sortColumn={sortColumn}
           sortOrder={sortOrder}
+          search={search}
           onSort={handleSort}
           setMeta={setMeta}
         />
